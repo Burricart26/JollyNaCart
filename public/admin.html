@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JollyNaCart Admin</title>
+  <style>
+    body{font-family:Arial,sans-serif;margin:0;background:#f3f4f6;color:#111827}
+    header{padding:16px 24px;background:#113d00;color:#fff;display:flex;justify-content:space-between;align-items:center}
+    main{padding:24px}
+    table{width:100%;border-collapse:collapse;background:#fff}
+    th,td{border:1px solid #e5e7eb;padding:10px;text-align:left}
+    th{background:#f9fafb}
+    button{background:#113d00;color:#fff;border:none;padding:8px 12px;border-radius:6px;cursor:pointer}
+    .admin-chat-panel{margin-top:32px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px;box-shadow:0 10px 35px rgba(0,0,0,0.05);display:flex;flex-direction:column;gap:12px}
+    .admin-chat-panel__header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .admin-chat-panel__header h2{margin:0;font-size:1.25rem}
+    .admin-chat-panel__header span{font-size:0.9rem;color:#57606a}
+    .chat-messages{max-height:320px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:12px;padding:12px;background:#f9fafb}
+    .chat-messages-empty{display:flex;align-items:center;justify-content:center;padding:1rem;color:#6b7280;font-size:0.95rem}
+    .chat-message{margin-bottom:8px;padding:10px 14px;border-radius:14px;max-width:75%;box-shadow:0 4px 12px rgba(0,0,0,0.1);display:flex;flex-direction:column;gap:4px}
+    .chat-message:last-child{margin-bottom:0}
+    .chat-message--user{align-self:flex-start;background:#0f5132;color:#fff}
+    .chat-message--admin{align-self:flex-end;background:#e2f6dc;color:#0b2d0b}
+    .chat-message--auto{align-self:flex-start;background:#d1d5db;color:#1f1f1f}
+    .chat-message small{font-size:0.7rem;color:inherit;opacity:0.8}
+    .chat-actions{display:flex;gap:10px;flex-direction:column}
+    .chat-actions textarea{width:100%;border-radius:12px;border:1px solid #d1d5db;padding:10px;font-family:inherit;font-size:0.95rem;resize:vertical}
+    .chat-actions button{align-self:flex-end}
+    .active-chat-row{background:#bfdada;color:#071b21}
+    .reference-thumb{max-height:80px;border-radius:10px;object-fit:cover;display:block}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>JollyNaCart Admin Dashboard</h1>
+    <div>
+      <button onclick="window.location.href='/'">Storefront</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </header>
+  <main>
+  <h2>Recent Orders</h2>
+  <table>
+    <thead>
+      <tr>
+          <th>Date</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Address</th>
+          <th>Reference</th>
+          <th>Items</th>
+          <th>Total</th>
+      </tr>
+    </thead>
+    <tbody id="ordersBody"></tbody>
+  </table>
+  <h2 style="margin-top:32px;">Recent Chats</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>User</th>
+        <th>Email</th>
+        <th>Last message</th>
+        <th>Sender</th>
+      </tr>
+    </thead>
+    <tbody id="chatUsersBody"></tbody>
+  </table>
+  <section class="admin-chat-panel">
+    <div class="admin-chat-panel__header">
+      <h2>Live Chat</h2>
+      <span id="chatPanelLabel">Select a conversation</span>
+    </div>
+    <div id="chatConversation" class="chat-messages">
+      <div class="chat-messages-empty">Select a customer chat to begin replying.</div>
+    </div>
+    <div class="chat-actions">
+      <textarea id="chatReplyInput" rows="3" placeholder="Type a reply..." disabled></textarea>
+      <button id="chatReplyBtn" disabled>Send Reply</button>
+    </div>
+  </section>
+</main>
+  <script>
+  let adminStream = null;
+  let activeChatUserId = null;
+  let activeChatUserName = '';
+
+  const chatBody = document.getElementById('chatUsersBody');
+  const chatConversation = document.getElementById('chatConversation');
+  const chatReplyInput = document.getElementById('chatReplyInput');
+  const chatReplyBtn = document.getElementById('chatReplyBtn');
+  const chatPanelLabel = document.getElementById('chatPanelLabel');
+
+  async function loadOrders(){
+    const response = await fetch('/api/admin/orders', { credentials: 'same-origin' });
+    if(!response.ok){
+      alert('Admin login required.');
+      window.location.href = '/';
+      return;
+    }
+    const data = await response.json();
+    const tbody = document.getElementById('ordersBody');
+    tbody.innerHTML = '';
+      data.orders.forEach(order => {
+        const tr = document.createElement('tr');
+        const referenceHtml = order.referenceImage ? `<img class="reference-thumb" src="${order.referenceImage}" alt="Reference image" loading="lazy">` : "â€”";
+        tr.innerHTML = `
+          <td>${new Date(order.createdAt).toLocaleString()}</td>
+        <td>${order.fullName}</td>
+        <td>${order.email}</td>
+        <td>${order.address}</td>
+        <td>${referenceHtml}</td>
+        <td>${(order.items || []).join(', ')}</td>
+        <td>₱${Number(order.total || 0).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+    await loadChatActivity(true);
+    startAdminStream();
+  }
+
+  async function loadChatActivity(allowAutoSelect = false){
+    const response = await fetch('/api/chat/users', { credentials: 'same-origin' });
+    if(!response.ok){
+      if(response.status === 401){
+        alert('Admin login required.');
+        window.location.href = '/';
+      }
+      return;
+    }
+    const data = await response.json();
+    if(!chatBody){
+      return;
+    }
+    const users = Array.isArray(data.users) ? data.users : [];
+    if(users.length === 0){
+      chatBody.innerHTML = '<tr><td colspan="5">No chat activity yet.</td></tr>';
+      renderEmptyConversation('No chat activity yet.');
+      return;
+    }
+    chatBody.innerHTML = '';
+    users.forEach(user => {
+      const tr = document.createElement('tr');
+      tr.dataset.userid = user.userId;
+      const lastAt = user.lastAt ? new Date(user.lastAt).toLocaleString() : 'N/A';
+      const senderLabel = user.lastSender === 'admin' ? 'Admin' : user.lastSender === 'user' ? 'Customer' : 'System';
+      tr.innerHTML = `
+        <td>${lastAt}</td>
+        <td>${user.fullName || user.email}</td>
+        <td>${user.email}</td>
+        <td>${user.lastMessage || '—'}</td>
+        <td>${senderLabel}</td>
+      `;
+      tr.addEventListener('click', () => selectChatUser(user));
+      if(user.userId === activeChatUserId){
+        tr.classList.add('active-chat-row');
+      }
+      chatBody.appendChild(tr);
+    });
+    if(!activeChatUserId && allowAutoSelect && users.length){
+      await selectChatUser(users[0]);
+      return;
+    }
+    if(activeChatUserId){
+      const stillExists = users.some(u => u.userId === activeChatUserId);
+      if(!stillExists){
+        renderEmptyConversation('Select a customer chat to begin replying.');
+        activeChatUserId = null;
+        activeChatUserName = '';
+      } else {
+        await populateConversation(activeChatUserId, activeChatUserName, false);
+      }
+    }
+  }
+
+  function setActiveRow(userId){
+    if(!chatBody) return;
+    chatBody.querySelectorAll('tr').forEach(row => {
+      row.classList.toggle('active-chat-row', row.dataset.userid === userId);
+    });
+  }
+
+  function updatePanelHeader(name){
+    if(chatPanelLabel){
+      chatPanelLabel.textContent = name ? `Chat with ${name}` : 'Select a conversation';
+    }
+  }
+
+  async function selectChatUser(user){
+    activeChatUserId = user.userId;
+    activeChatUserName = user.fullName || user.email || 'Customer';
+    setActiveRow(activeChatUserId);
+    await populateConversation(activeChatUserId, activeChatUserName);
+  }
+
+  async function populateConversation(userId, displayName, updateHeader = true){
+    if(!userId){
+      renderEmptyConversation('Select a customer chat to begin replying.');
+      return;
+    }
+    if(updateHeader){
+      updatePanelHeader(displayName);
+    }
+    if(chatReplyInput){
+      chatReplyInput.disabled = false;
+    }
+    if(chatReplyBtn){
+      chatReplyBtn.disabled = false;
+    }
+    try{
+      const response = await fetch(`/api/chat/user/${userId}/messages`, { credentials: 'same-origin' });
+      if(!response.ok){
+        renderEmptyConversation('Unable to load conversation.');
+        return;
+      }
+      const data = await response.json();
+      const messages = Array.isArray(data.messages) ? data.messages : [];
+      renderMessages(messages);
+    }catch(error){
+      console.error('Chat conversation error', error);
+      renderEmptyConversation('Unable to load conversation.');
+    }
+  }
+
+  function renderMessages(messages){
+    if(!chatConversation){
+      return;
+    }
+    if(!messages.length){
+      chatConversation.innerHTML = '<div class="chat-messages-empty">No messages yet.</div>';
+      return;
+    }
+    chatConversation.innerHTML = messages.map(msg => {
+      const classes = msg.sender === 'admin' ? 'chat-message--admin' : msg.sender === 'user' ? 'chat-message--user' : 'chat-message--auto';
+      const label = msg.sender === 'admin' ? 'Admin' : msg.sender === 'user' ? activeChatUserName || 'Customer' : 'System';
+      const time = msg.createdAt ? new Date(msg.createdAt).toLocaleString() : '';
+      return `<div class="chat-message ${classes}"><span>${msg.text}</span><small>${label} • ${time}</small></div>`;
+    }).join('');
+    chatConversation.scrollTop = chatConversation.scrollHeight;
+  }
+
+  function renderEmptyConversation(message = 'Select a customer chat to begin replying.'){
+    if(chatConversation){
+      chatConversation.innerHTML = `<div class="chat-messages-empty">${message}</div>`;
+    }
+    if(chatReplyInput){
+      chatReplyInput.disabled = true;
+    }
+    if(chatReplyBtn){
+      chatReplyBtn.disabled = true;
+    }
+  }
+
+  function startAdminStream(){
+    if(!window.EventSource){
+      return;
+    }
+    if(adminStream){
+      adminStream.close();
+    }
+    adminStream = new EventSource('/api/chat/stream/admin');
+    adminStream.onmessage = () => {
+      loadChatActivity(false);
+      if(activeChatUserId){
+        populateConversation(activeChatUserId, activeChatUserName, false);
+      }
+    };
+    adminStream.onerror = (error) => {
+      console.error('Admin chat stream error', error);
+      if(adminStream){
+        adminStream.close();
+        adminStream = null;
+      }
+      setTimeout(startAdminStream, 5000);
+    };
+  }
+
+  chatReplyBtn?.addEventListener('click', async () => {
+    if(!activeChatUserId){
+      return;
+    }
+    const text = chatReplyInput?.value?.trim();
+    if(!text){
+      return;
+    }
+    chatReplyBtn.disabled = true;
+    try{
+      const response = await fetch('/api/chat/reply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ userId: activeChatUserId, text })
+      });
+      const data = await response.json().catch(() => null);
+      if(!response.ok){
+        alert(data?.error || 'Failed to send reply.');
+        return;
+      }
+      if(chatReplyInput){
+        chatReplyInput.value = '';
+      }
+      await populateConversation(activeChatUserId, activeChatUserName, false);
+      await loadChatActivity(false);
+    }catch(error){
+      console.error('Chat reply error', error);
+      alert('Unable to send reply.');
+    }finally{
+      if(chatReplyBtn){
+        chatReplyBtn.disabled = false;
+      }
+    }
+  });
+
+  async function logout(){
+    await fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    window.location.href = '/';
+  }
+
+    loadOrders();
+  </script>
+  <script>
+    async function checkAdmin(){
+
+      const res = await fetch("/auth/me", { credentials: "same-origin" });
+      const data = await res.json();
+
+      if(!data.user || data.user.role !== "admin"){
+        alert("Admin access only");
+        window.location.href = "/";
+      }
+
+    }
+
+    checkAdmin();
+</script>
+</body>
+</html>

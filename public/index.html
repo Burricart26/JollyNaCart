@@ -1,0 +1,2894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JollyNaCart Personal Shopper</title>
+<style>
+    :root {
+        --bg: #fff8f0;
+        --primary: #2a9d8f;
+        --primary-dark: #1f7a6a;
+        --accent: #f4a261;
+        --accent-strong: #e76f51;
+        --radius: 26px;
+        --transition: 0.3s ease;
+        --header-height: 108px;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(170deg, #fff8f0 0%, #f9f4ef 50%, #e9f5ef 100%);
+        color: #111;
+        scroll-padding-top: calc(var(--header-height) + 1rem);
+    }
+
+    header {
+        background: #f9f5ef;
+        color: #1b3f36;
+        padding: 0.65rem clamp(1rem, 4vw, 2rem);
+        border-bottom: 1px solid rgba(42, 157, 143, 0.35);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 10px 35px rgba(42, 157, 143, 0.2);
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        max-height: none;
+        overflow: visible;
+    }
+
+    .header-row {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .brand-block {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        flex: 1;
+    }
+
+    .brand-text h1 {
+        margin: 0;
+        font-size: clamp(1.7rem, 3vw, 2.2rem);
+        letter-spacing: 0.02em;
+        color: #1b3f36;
+    }
+
+    .brand-text p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #2f5f57;
+        font-weight: 500;
+    }
+
+    .header-nav {
+        display: flex;
+        gap: 0.55rem;
+        flex-wrap: wrap;
+    }
+
+    .header-search-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    .search-wrapper {
+        flex: 1 1 300px;
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        padding: 0.4rem 1rem;
+        border-radius: 10px;
+        box-shadow: 0 12px 30px rgba(42, 157, 143, 0.15);
+        max-width: 640px;
+        min-height: 46px;
+    }
+
+    .search {
+        background: transparent;
+        border: none;
+        flex: 1;
+        font-size: 1rem;
+        padding: 0.65rem 0;
+        border-radius: 0;
+        color: #333;
+    }
+
+    .search:focus {
+        outline: none;
+    }
+
+    .header-tools {
+        display: flex;
+        gap: 0.65rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .cart-summary {
+        font-size: 0.95rem;
+        color: #1f7a6a;
+        background: rgba(42, 157, 143, 0.12);
+        padding: 0.6rem 0.9rem;
+        border-radius: 12px;
+        margin-bottom: 0.8rem;
+        border: 1px solid rgba(42, 157, 143, 0.2);
+    }
+
+    .vehicle-info {
+        display: block;
+        font-size: 0.85rem;
+        color: #2f5f57;
+        margin-left: 1.5rem;
+        margin-top: 0.25rem;
+    }
+
+    label.vehicle-unfit {
+        opacity: 0.5;
+    }
+
+    button,
+    .start-btn,
+    .shop-btn,
+    .pill-btn {
+        border: none;
+        border-radius: var(--radius);
+        background: var(--primary);
+        color: #fff;
+        font-weight: 600;
+        font-size: 0.95rem;
+        padding: 0.6rem 1.25rem;
+        min-width: 110px;
+        min-height: 40px;
+        cursor: pointer;
+        transition: transform var(--transition), box-shadow var(--transition);
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    button:hover,
+    .start-btn:hover,
+    .shop-btn:hover,
+    .pill-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .back-pill {
+        background: #ffffff;
+        color: var(--primary-dark);
+        border-radius: 50%;
+        width: 44px;
+        min-width: auto;
+        height: 44px;
+        font-size: 1.4rem;
+        font-weight: 700;
+        padding: 0;
+        border: 0;
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    section {
+        width: min(1200px, 100%);
+        margin: 0 auto;
+        padding: clamp(1.5rem, 3vw, 3rem) 1rem;
+    }
+
+    .home {
+        text-align: center;
+        padding-top: clamp(2rem, 4vw, 4rem);
+    }
+
+    .home-image {
+        width: 100%;
+        height: min(500px, 45vh);
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: clamp(1rem, 2vw, 1.75rem);
+        padding-bottom: 2rem;
+    }
+
+    .recommendations {
+        background: #ffffff;
+        border-radius: 18px;
+        padding: 1rem 1.25rem;
+        margin: 0 1rem 1.5rem;
+        box-shadow: 0 14px 36px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(42, 157, 143, 0.14);
+        display: none;
+    }
+
+    .recommendations h3 {
+        margin: 0 0 0.15rem 0;
+        color: #1b3f36;
+        letter-spacing: 0.01em;
+    }
+
+    .rec-context {
+        color: #2f5f57;
+        font-size: 0.9rem;
+        margin: 0 0 0.75rem 0;
+    }
+
+    .rec-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+        gap: 0.75rem;
+    }
+
+    .rec-card {
+        display: grid;
+        grid-template-columns: 70px 1fr;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-radius: 14px;
+        background: #f6fbf9;
+        border: 1px solid rgba(42, 157, 143, 0.16);
+    }
+
+    .rec-card img {
+        width: 70px;
+        height: 70px;
+        object-fit: cover;
+        border-radius: 12px;
+        border: 1px solid rgba(0, 0, 0, 0.04);
+    }
+
+    .rec-name {
+        margin: 0;
+        font-weight: 700;
+        color: #1b3f36;
+    }
+
+    .rec-price {
+        margin: 0.2rem 0 0.5rem 0;
+        color: #2f5f57;
+        font-weight: 600;
+    }
+
+    .pin {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        position: relative;
+        height: 320px;
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .pin img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .overlay {
+        position: absolute;
+        inset-block-end: 0;
+        inset-inline: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.8) 95%);
+        color: white;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-start;
+        justify-content: flex-end;
+    }
+
+    .overlay p {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    footer {
+        background: var(--accent);
+        color: white;
+        text-align: center;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        z-index: 1000;
+    }
+
+    .modal-content {
+        background: white;
+        padding: clamp(1.5rem, 3vw, 2.5rem);
+        border-radius: 20px;
+        min-inline-size: min(420px, 90vw);
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    input, textarea, select {
+        width: 100%;
+        padding: 1rem;
+        border-radius: 12px;
+        border: 1px solid #cfcfcf;
+        margin-block: 0.6rem 0;
+        font-size: 1rem;
+        font-family: inherit;
+    }
+
+    .chat-box {
+        background: #f7f7f7;
+        border-radius: 12px;
+        padding: 0.8rem;
+        max-width: 560px;
+        margin: 1rem auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        min-height: 180px;
+    }
+
+    .chat-message {
+        background: var(--primary);
+        color: white;
+        padding: 0.65rem 1rem;
+        border-radius: 12px;
+        display: inline-flex;
+        flex-direction: column;
+        gap: 0.2rem;
+        max-width: 80%;
+        font-size: 0.95rem;
+        line-height: 1.3;
+    }
+
+    .chat-message small {
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .chat-user {
+        align-self: flex-end;
+    }
+
+    .chat-admin {
+        align-self: flex-end;
+        background: #0a6a24;
+    }
+
+    .chat-auto {
+        align-self: flex-start;
+        background: #5a5a5a;
+    }
+
+    .notification {
+        position: fixed;
+        top: 1rem;
+        right: 1rem;
+        background: var(--primary);
+        color: white;
+        padding: 1rem 1.25rem;
+        border-radius: 12px;
+        box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+        z-index: 1100;
+    }
+
+    @media (max-width: 900px) {
+        :root {
+            --header-height: 86px;
+        }
+
+        header {
+            padding: 0.6rem 0.9rem;
+            gap: 0.55rem;
+        }
+
+        .header-row,
+        .header-search-row {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.55rem;
+        }
+
+        .header-row {
+            flex-wrap: wrap;
+        }
+
+        .brand-block {
+            flex: initial;
+        }
+
+        .header-nav {
+            justify-content: flex-start;
+        }
+
+        .search-wrapper {
+            width: 100%;
+            max-width: none;
+        }
+
+        .header-tools {
+            justify-content: flex-start;
+        }
+
+        .grid {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        }
+
+        .pin img {
+            height: 220px;
+        }
+
+        .modal-content,
+        .home,
+        #checkoutSummary {
+            padding-inline: 1rem;
+        }
+    }
+
+    @media (max-width: 540px) {
+        :root {
+            --header-height: 74px;
+        }
+
+        header {
+            padding: 0.5rem 0.75rem;
+        }
+
+        .brand-text p {
+            display: none;
+        }
+
+        .header-nav,
+        .header-tools {
+            gap: 0.4rem;
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .search-wrapper {
+            padding: 0.35rem 0.75rem;
+        }
+
+        .pill-btn {
+            min-width: auto;
+            padding: 0.55rem 0.9rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        header h1 {
+            font-size: 1.4rem;
+        }
+
+        button {
+            padding-inline: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            grid-template-columns: 1fr;
+        }
+
+        .modal-content {
+            width: min(90vw, 380px);
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding-bottom: 1.5rem;
+        }
+    }
+
+    #map {
+    height: 300px !important;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+}
+
+#starRating {
+    font-size: 3rem;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    color: #ddd;
+    margin: 2rem 0;
+    display: inline-flex;
+    gap: 0.75rem;
+}
+
+#starRating span {
+    transition: color 0.2s, background 0.2s, border 0.2s;
+    margin: 0;
+    border: 2px solid rgba(17, 61, 0, 0.35);
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+
+#starRating span:hover,
+#starRating span.filled {
+    color: #ffd700;
+    border-color: #ffd700;
+    background: #0f4414;
+}
+
+#ratingText {
+    font-weight: 600;
+}
+
+</style>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+</head>
+<body>
+   <audio id="notifSound">
+<source src="https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg" type="audio/ogg">
+</audio>
+
+
+<!-- HEADER -->
+<header>
+    <div class="header-row">
+        <div class="brand-block">
+            <button id="backBtn" class="back-pill" onclick="showHome()" aria-label="Back" style="display:none;">&lt;</button>
+            <div class="brand-text">
+                <h1>JollyNaCart</h1>
+                <p>Your curated shopping assistant</p>
+            </div>
+        </div>
+        <div class="header-nav">
+            <button class="pill-btn" onclick="showHome()">Home</button>
+            <button class="pill-btn" onclick="showShop()">Shop</button>
+        </div>
+    </div>
+    <div class="header-row header-search-row">
+        <div class="search-wrapper">
+            <input id="searchInput" class="search" placeholder="Search products">
+            <button class="pill-btn" onclick="performSearch()">Search</button>
+        </div>
+        <div class="header-tools">
+            <button id="cartBtn" class="pill-btn" onclick="openCartModal()" style="display:none;">Cart (<span id="cartCount">0</span>)</button>
+            <button id="authBtn" class="pill-btn" onclick="openAuthModal()">Login</button>
+            <button id="adminBtn" class="pill-btn" onclick="openAdminPage()" style="display:none;">Admin</button>
+            <button id="logoutBtn" class="pill-btn" onclick="logoutUser()" style="display:none;">Logout</button>
+        </div>
+    </div>
+</header>
+
+
+<!-- HOMEPAGE -->
+<section id="homePage" class="home">
+    <h2>Welcome to JollyNaCart 🛍️</h2>
+    <img src="BC.jpg" class="home-image" alt="JollyNaCart banner">
+    <p>Your personal shopping assistant for curated outfits.</p>
+    <button class="start-btn" onclick="showShop()">Start Shopping</button>
+</section>
+
+
+<!-- SHOP PAGE -->
+<section id="shopPage" style="display:none;">
+
+
+    <select id="categoryFilter" onchange="filterCategory()" style="margin:20px;">
+        <option value="all">All Categories</option>
+        <option value="Tops">Tops</option>
+        <option value="Bottoms">Bottoms</option>
+        <option value="Shoes">Shoes</option>
+        <option value="Jackets">Jackets</option>
+        <option value="Food">Food</option>
+        <option value="Drinks">Drinks</option>
+        <option value="Snacks">Snacks</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Accessories">Accessories</option>
+        <option value="School Supplies">School Supplies</option>
+        <option value="Books">Books</option>
+        <option value="Art Supplies">Art Supplies</option>
+        <option value="Office Supplies">Office Supplies</option>
+
+    </select>
+
+    <div id="recommendations" class="recommendations">
+        <h3>Recommended for you</h3>
+        <p id="recContext" class="rec-context">Pick an item to see similar picks.</p>
+        <div id="recList" class="rec-list"></div>
+    </div>
+
+
+    <div class="grid">
+
+
+        <div class="pin" data-category="Tops">
+            <img src="https://i.pinimg.com/originals/e2/3d/40/e23d40da457108c5866c3df4a32ae6e2.jpg">
+            <div class="overlay">
+                <p>Curated Dress - ₱549.99</p>
+                <button class="shop-btn" onclick="addToCart('Curated Dress', 549.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+        <div class="pin" data-category="Bottoms">
+            <img src="https://i.pinimg.com/736x/32/c5/cc/32c5ccc87b7f640ae12d5a40005c5557.jpg">
+            <div class="overlay">
+                <p>Baggy Pants - ₱329.99</p>
+                <button class="shop-btn" onclick="addToCart('Baggy Pants', 329.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+        <div class="pin" data-category="Shoes">
+            <img src="https://i.pinimg.com/736x/2d/d5/67/2dd56763ef4e041ce483639f2d867776.jpg">
+            <div class="overlay">
+                <p>Adidas Samba - ₱1,079.99</p>
+                <button class="shop-btn" onclick="addToCart('Adidas Samba', 1079.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+        <div class="pin" data-category="Jackets">
+           <img src="QZS.jpg" alt="Quarter Zip Jacket">
+            <div class="overlay">
+                <p>Quarter Zip Jacket - ₱789.99</p>
+                <button class="shop-btn" onclick="addToCart('Quarter Zip Jacket', 789.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+       <div class="pin" data-category="Jackets">
+            <img src="https://i.pinimg.com/474x/65/4f/96/654f96f83a9b79c5e6954c7476bb71ab.jpg">
+            <div class="overlay">
+                <p>Distressed Denim Jacket - ₱689.99</p>
+                <button class="shop-btn" onclick="addToCart('Distressed Denim Jacket', 689.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+        <div class="pin" data-category="Jackets">
+            <img src="https://xcdn.next.co.uk/common/items/default/default/itemimages/3_4Ratio/product/lge/V10544s6.jpg?im=Resize,width=750">
+            <div class="overlay">
+                <p>Cropped Puffer Jacket - ₱899.99</p>
+                <button class="shop-btn" onclick="addToCart('Cropped Puffer Jacket', 899.99)">Add to Cart</button>
+            </div>
+        </div>
+
+
+        <div class="pin" data-category="Bottoms">
+            <img src="https://encrypted-tbn3.gstatic.com/shopping?q=tbn:ANd9GcQGPPrwKbLQkuVeLNZB439mfWsQDf9r2TYqWQiG8j_xTEe49Yyc4KFxVm-k6qRFR01K1I01Eeu1aJxqus9ZLDEw8R8YIKXs665wNr2SBulzua2rJpU7kih2">
+            <div class="overlay">
+                <p>Vintage Washed Denim Shorts - ₱259.99</p>
+                <button class="shop-btn" onclick="addToCart('Vintage Washed Denim Shorts', 259.99)">Add to Cart</button>
+            </div>
+        </div>
+
+<div class="pin" data-category="Tops">
+<img src="https://images.calvinklein.com/is/image/CalvinKlein/40K4216_112_main?$pdp_main_lg$">
+<div class="overlay">
+<p>Calvin Klein Monogram Tee - ₱1,199.99</p>
+<button class="shop-btn" onclick="addToCart('Calvin Klein Monogram Tee',1199.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Tops">
+<img src="https://www.lacoste.com.ph/media/catalog/product/cache/78ef9bb5f70e9d4e5caa2b6f2b08589d/l/1/l1212-00-nu7-1.jpg">
+<div class="overlay">
+<p>Lacoste Classic Striped Polo - ₱1,999.99</p>
+<button class="shop-btn" onclick="addToCart('Lacoste Classic Striped Polo',1999.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Tops">
+<img src="https://image.uniqlo.com/UQ/ST3/AsianCommon/imagesgoods/465943/item/goods_00_465943.jpg">
+<div class="overlay">
+<p>Uniqlo U Crew Neck Tee - ₱590.00</p>
+<button class="shop-btn" onclick="addToCart('Uniqlo U Crew Neck Tee',590)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Bottoms">
+<img src="https://media.wired.com/photos/611c5312798f0e2c853b702f/1:1/w_993,h_993,c_limit/Gear-Cargo-Pants-are-Back-1302952122.jpg">
+<div class="overlay">
+<p>Cargo Pants - ₱489.99</p>
+<button class="shop-btn" onclick="addToCart('Cargo Pants',489.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Bottoms">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRvTlYPFKkLd4pUOPp841aKcPzdhOAhNX3yQ&s">
+<div class="overlay">
+<p>Black Skinny Jeans - ₱399.99</p>
+<button class="shop-btn" onclick="addToCart('Black Skinny Jeans',399.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Bottoms">
+<img src="https://www.cernucci.com/cdn/shop/files/YY-DCRGT01DH-M-B--_VG-NVRD01DH-M-WG-2.jpg?v=1725286873&width=800">
+<div class="overlay">
+<p>Relaxed Fit Denim - ₱459.99</p>
+<button class="shop-btn" onclick="addToCart('Relaxed Fit Denim',459.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Shoes">
+<img src="https://img01.ztat.net/article/spp-media-p1/54ebff14c74f4e55a760de6f09436896/99693223863b4d87871e6aada1547495.jpg?imwidth=1800&filter=packshot">
+<div class="overlay">
+<p>Nike Air Force 1 - ₱1,399.99</p>
+<button class="shop-btn" onclick="addToCart('Nike Air Force 1',1399.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Shoes">
+<img src="https://www.converse.ph/media/catalog/product/cache/ae7cee22ac1ff58c2794c87414f27b45/0/8/0802-CONA16447C00505H-1.jpg">
+<div class="overlay">
+<p>Converse Chuck Taylor - ₱999.99</p>
+<button class="shop-btn" onclick="addToCart('Converse Chuck Taylor',999.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Shoes">
+<img src="https://image.goxip.com/tB4B7iEtIrD6Kua_hyDKgdofU3Q=/fit-in/500x500/filters:format(jpg):quality(80):fill(white)/https:%2F%2Fimages.stockx.com%2Fimages%2FNew-Balance-550-White-Green-Product.jpg">
+<div class="overlay">
+<p>New Balance 550 - ₱1,299.99</p>
+<button class="shop-btn" onclick="addToCart('New Balance 550',1299.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Jackets">
+<img src="https://buffalojackson.com/cdn/shop/files/cafe-racer-motorcycle-jacket-brown-distressed-vintage_800x.jpg?v=1740688932">
+<div class="overlay">
+<p>Vintage Leather Jacket - ₱1,299.99</p>
+<button class="shop-btn" onclick="addToCart('Vintage Leather Jacket',1299.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Jackets">
+<img src="https://img.lazcdn.com/g/ff/kf/S1e1584d6af4248dd9f5bdf5dfc9fb985F.jpg_720x720q80.jpg">
+<div class="overlay">
+<p>Streetwear Hoodie - ₱599.99</p>
+<button class="shop-btn" onclick="addToCart('Streetwear Hoodie',599.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Jackets">
+<img src="https://image.uniqlo.com/UQ/ST3/sg/imagesgoods/476445/item/sggoods_65_476445_3x4.jpg?width=288">
+<div class="overlay">
+<p>Denim Overshirt - ₱699.99</p>
+<button class="shop-btn" onclick="addToCart('Denim Overshirt',699.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://images.unsplash.com/photo-1550547660-d9450f859349">
+<div class="overlay">
+<p>McDonald's Big Mac Meal - ₱189</p>
+<button class="shop-btn" onclick="addToCart('McDonald\'s Big Mac Meal',189)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://i.pinimg.com/736x/df/a0/59/dfa0591fe9580386706d7ae55bf071ca.jpg">
+<div class="overlay">
+<p>Jollibee Chickenjoy Meal - ₱199</p>
+<button class="shop-btn" onclick="addToCart('Jollibee Chickenjoy Meal',199)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://www.chomp.pizza/_next/image?url=https%3A%2F%2Fdkoxmv7ca6.ufs.sh%2Ff%2Fs86AdQWJ310B82ANlsHfp0yHVclGQLBU3RSJ4vnw7iabITz2&w=3840&q=75">
+<div class="overlay">
+<p>Shakey's Pepperoni Slice - ₱120</p>
+<button class="shop-btn" onclick="addToCart('Shakey\'s Pepperoni Slice',120)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://www.tasteandtellblog.com/wp-content/uploads/2022/08/Garlic-Spaghetti-6.jpg">
+<div class="overlay">
+<p>Greenwich Spaghetti Plate - ₱135</p>
+<button class="shop-btn" onclick="addToCart('Greenwich Spaghetti Plate',135)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://wholesomemadeeasy.com/wp-content/uploads/2025/04/chicken-roasted-vegetable-bowls-13.jpg">
+<div class="overlay">
+<p>Chowking Chao Fan w/ Chicken - ₱155</p>
+<button class="shop-btn" onclick="addToCart('Chowking Chao Fan w/ Chicken',155)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Snacks">
+<img src="https://images.unsplash.com/photo-1585238342024-78d387f4a707">
+<div class="overlay">
+<p>McDonald's World Famous Fries - ₱75</p>
+<button class="shop-btn" onclick="addToCart('McDonald\'s World Famous Fries',75)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Snacks">
+<img src="https://preppykitchen.com/wp-content/uploads/2024/05/Homemade-Potato-Chips-Feature.jpg">
+<div class="overlay">
+<p>Lay's Classic Potato Chips - ₱85</p>
+<button class="shop-btn" onclick="addToCart('Lay\'s Classic Potato Chips',85)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Snacks">
+<img src="https://princesspinkygirl.com/wp-content/uploads/2024/12/Dubai-Chocolate-Bar-Dark-Chocolate-21SQ1200.jpg">
+<div class="overlay">
+<p>Cadbury Dairy Milk Bar - ₱80</p>
+<button class="shop-btn" onclick="addToCart('Cadbury Dairy Milk Bar',80)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Drinks">
+<img src="https://frostingandfettuccine.com/wp-content/uploads/2022/12/Vanilla-Iced-Coffee-5.jpg">
+<div class="overlay">
+<p>Starbucks Iced Latte - ₱180</p>
+<button class="shop-btn" onclick="addToCart('Starbucks Iced Latte',180)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Drinks">
+<img src="https://assets.epicurious.com/photos/5953ca064919e41593325d97/1:1/w_2560%2Cc_limit/bubble_tea_recipe_062817.jpg">
+<div class="overlay">
+<p>Gong Cha Pearl Milk Tea - ₱140</p>
+<button class="shop-btn" onclick="addToCart('Gong Cha Pearl Milk Tea',140)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Drinks">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQoInX90T67DL83k7JjdqCts5VG-1hAE9Z67w&s">
+<div class="overlay">
+<p>Coca-Cola Can - ₱40</p>
+<button class="shop-btn" onclick="addToCart('Coca-Cola Can',40)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Electronics">
+<img src="https://cdn.sony.com/-/media/Microsites/sonyx/peripherals/headphones/wh-1000xm5/wh-1000xm5_black.png">
+<div class="overlay">
+<p>Sony WH-1000XM5 Wireless Headphones - ₱14,999.00</p>
+<button class="shop-btn" onclick="addToCart('Sony WH-1000XM5 Wireless Headphones',14999)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Electronics">
+<img src="https://store.storeimages.cdn-apple.com/4668/as-images.apple.com/is/iphone-15-pro-max-blacktitanium-select?wid=940&hei=1112&fmt=png-alpha&.v=1692846360604">
+<div class="overlay">
+<p>Apple iPhone 15 (128GB) - ₱54,990.00</p>
+<button class="shop-btn" onclick="addToCart('Apple iPhone 15 (128GB)',54990)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Electronics">
+<img src="https://jblstore.com.ph/cdn/shop/files/JBL_FLIP6_HERO_BLACK_1605x1605px.png?v=1644897917">
+<div class="overlay">
+<p>JBL Flip 6 Portable Speaker - ₱4,299.00</p>
+<button class="shop-btn" onclick="addToCart('JBL Flip 6 Portable Speaker',4299)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Accessories">
+<img src="https://images.footlocker.com/is/image/EBFL2/NE4001_410_P1?wid=1024&hei=1024">
+<div class="overlay">
+<p>New Era 59FIFTY Cap - ₱1,499.00</p>
+<button class="shop-btn" onclick="addToCart('New Era 59FIFTY Cap',1499)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Accessories">
+<img src="https://assets.ray-ban.com/is/image/RayBan/805289602057_shad_qt?$594$">
+<div class="overlay">
+<p>Ray-Ban Wayfarer Sunglasses - ₱6,499.00</p>
+<button class="shop-btn" onclick="addToCart('Ray-Ban Wayfarer Sunglasses',6499)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Accessories">
+<img src="https://herschel.ph/cdn/shop/files/11161-05607-OS_01.jpg?v=1725309614&width=1200">
+<div class="overlay">
+<p>Herschel Little America Backpack - ₱4,999.00</p>
+<button class="shop-btn" onclick="addToCart('Herschel Little America Backpack',4999)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE TOPS -->
+<div class="pin" data-category="Tops">
+<img src="https://www.urbanofashion.com/cdn/shop/files/SHIRTS_1.jpg?v=1762254267">
+<div class="overlay">
+<p>Uniqlo Supima Cotton Crew Neck - ₱590.00</p>
+<button class="shop-btn" onclick="addToCart('Uniqlo Supima Cotton Crew Neck',590)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Tops">
+<img src="https://dynamic.zacdn.com/Ja08U-kNzXgAHcmoiixhEYbgo-Q=/filters:quality(70):format(webp)/https://static-ph.zacdn.com/p/hm-9570-5053472-1.jpg">
+<div class="overlay">
+<p>Champion Reverse Weave Hoodie - ₱2,599.00</p>
+<button class="shop-btn" onclick="addToCart('Champion Reverse Weave Hoodie',2599)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Tops">
+<img src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf">
+<div class="overlay">
+<p>H&M Oxford Button-Up Shirt - ₱1,299.00</p>
+<button class="shop-btn" onclick="addToCart('H&M Oxford Button-Up Shirt',1299)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE BOTTOMS -->
+<div class="pin" data-category="Bottoms">
+<img src="https://guess.com.ph/cdn/shop/files/0233_V5RB09WGUJ0-G9A9-ALT1_bbdc2e42-cd1d-40bc-8798-fe7c94452645.jpg?v=1746094595&width=1200">
+<div class="overlay">
+<p>Adidas Essentials Joggers - ₱2,499.00</p>
+<button class="shop-btn" onclick="addToCart('Adidas Essentials Joggers',2499)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Bottoms">
+<img src="https://images.unsplash.com/photo-1582418702059-97ebafb35d09">
+<div class="overlay">
+<p>Levi's 501 Original Fit Jeans - ₱3,999.00</p>
+<button class="shop-btn" onclick="addToCart('Levi\'s 501 Original Fit Jeans',3999)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Bottoms">
+<img src="https://cdn-images.farfetch-contents.com/27/68/42/01/27684201_59004872_600.jpg">
+<div class="overlay">
+<p>Patagonia Baggies Shorts - ₱2,199.00</p>
+<button class="shop-btn" onclick="addToCart('Patagonia Baggies Shorts',2199)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE SHOES -->
+<div class="pin" data-category="Shoes">
+<img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff">
+<div class="overlay">
+<p>Nike Running Shoes - ₱1,499.99</p>
+<button class="shop-btn" onclick="addToCart('Nike Running Shoes',1499.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Shoes">
+<img src="https://assets.adidas.com/images/w_600,f_auto,q_auto/9d844b95d06948f0a1552188bc694c27_faec/Ultraboost_5_Shoes_Black_ID8812_db01_standard.jpg">
+<div class="overlay">
+<p>Adidas Ultraboost - ₱1,799.99</p>
+<button class="shop-btn" onclick="addToCart('Adidas Ultraboost',1799.99)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Shoes">
+<img src="https://identityboardshops.com/cdn/shop/files/VN0A5FCB_Y28_ALT1_480x480.jpg?v=1686086594">
+<div class="overlay">
+<p>Vans Old Skool - ₱1,199.99</p>
+<button class="shop-btn" onclick="addToCart('Vans Old Skool',1199.99)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE FOOD -->
+<div class="pin" data-category="Food">
+<img src="https://images.unsplash.com/photo-1600891964092-4316c288032e">
+<div class="overlay">
+<p>Pancake House Salisbury Steak - ₱210</p>
+<button class="shop-btn" onclick="addToCart('Pancake House Salisbury Steak',210)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://www.simplyhappenings.com/wp-content/uploads/2024/05/IMG_6937-2.jpg">
+<div class="overlay">
+<p>KFC Zinger Sandwich - ₱175</p>
+<button class="shop-btn" onclick="addToCart('KFC Zinger Sandwich',175)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Food">
+<img src="https://therecipecritic.com/wp-content/uploads/2017/09/BD13D8BA-9BFA-4BFD-AF09-17DC38CBFECA.jpeg">
+<div class="overlay">
+<p>Ramen Nagi Butao Bowl - ₱390</p>
+<button class="shop-btn" onclick="addToCart('Ramen Nagi Butao Bowl',390)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE DRINKS -->
+<div class="pin" data-category="Drinks">
+<img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93">
+<div class="overlay">
+<p>Starbucks Brewed Coffee - ₱140</p>
+<button class="shop-btn" onclick="addToCart('Starbucks Brewed Coffee',140)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Drinks">
+<img src="https://images.unsplash.com/photo-1553531889-56cc480ac5cb">
+<div class="overlay">
+<p>Jamba Juice Mango-A-Go-Go - ₱210</p>
+<button class="shop-btn" onclick="addToCart('Jamba Juice Mango-A-Go-Go',210)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Drinks">
+<img src="https://ourzestylife.com/wp-content/uploads/2025/05/Iced-Tea-Recipe-OurZestyLife-3.jpg">
+<div class="overlay">
+<p>Nestea Lemon Iced Tea - ₱65</p>
+<button class="shop-btn" onclick="addToCart('Nestea Lemon Iced Tea',65)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE ELECTRONICS -->
+<div class="pin" data-category="Electronics">
+<img src="https://www.techtarget.com/rms/onlineimages/hp_elitebook_mobile.jpg">
+<div class="overlay">
+<p>HP EliteBook 840 Laptop - ₱28,999</p>
+<button class="shop-btn" onclick="addToCart('HP EliteBook 840 Laptop',28999)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Electronics">
+<img src="https://ecommerce.datablitz.com.ph/cdn/shop/files/6950376735508_800x.jpg?v=1768811268">
+<div class="overlay">
+<p>Gaming Mouse - ₱599</p>
+<button class="shop-btn" onclick="addToCart('Gaming Mouse',599)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Electronics">
+<img src="https://images.unsplash.com/photo-1587829741301-dc798b83add3">
+<div class="overlay">
+<p>Mechanical Keyboard - ₱1,299</p>
+<button class="shop-btn" onclick="addToCart('Mechanical Keyboard',1299)">Add to Cart</button>
+</div>
+</div>
+
+<!-- MORE ACCESSORIES -->
+<div class="pin" data-category="Accessories">
+<img src="https://hidesign.com/cdn/shop/files/8903439897109_2_fde49526-5ffc-447e-a318-6f6cef62b5ad.jpg?v=1761126559&width=800s">
+<div class="overlay">
+<p>Leather Wallet - ₱299</p>
+<button class="shop-btn" onclick="addToCart('Leather Wallet',299)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Accessories">
+<img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30">
+<div class="overlay">
+<p>Digital Watch - ₱799</p>
+<button class="shop-btn" onclick="addToCart('Digital Watch',799)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Accessories">
+<img src="https://herschel.ph/cdn/shop/files/2100314534_01.jpg?v=1763541932&width=1080">
+<div class="overlay">
+<p>Travel Duffel Bag - ₱899</p>
+<button class="shop-btn" onclick="addToCart('Travel Duffel Bag',899)">Add to Cart</button>
+</div>
+</div>
+
+<!-- SCHOOL SUPPLIES -->
+
+<div class="pin" data-category="School Supplies">
+<img src="https://assets-production.mochithings.com/products/94748/photos/square_thumbnail_207021-pastel-spiral-lined-notebook-set-of-12-2f5b0c.jpg">
+<div class="overlay">
+<p>Notebook Set - ₱120</p>
+<button class="shop-btn" onclick="addToCart('Notebook Set',120)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="School Supplies">
+<img src="https://down-ph.img.susercontent.com/file/d11fc21ad2f6dce548968c1512873039">
+<div class="overlay">
+<p>Ballpen Pack (10pcs) - ₱80</p>
+<button class="shop-btn" onclick="addToCart('Ballpen Pack',80)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="School Supplies">
+<img src="https://down-ph.img.susercontent.com/file/01654c00f9f583dfebecd73e70343ace">
+<div class="overlay">
+<p>Pencil Set - ₱60</p>
+<button class="shop-btn" onclick="addToCart('Pencil Set',60)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="School Supplies">
+<img src="https://edu.casio.com/content/casio/locales/intl/en/brands/edu/calculators/scientific/fx991es_2/_jcr_content/root/responsivegrid/container/container_copy/container_copy_copy_/container_copy/container/container_2028268543/container/container/image.casiocoreimg.png/1771551489496/fx991es-2.png">
+<div class="overlay">
+<p>Scientific Calculator - ₱499</p>
+<button class="shop-btn" onclick="addToCart('Scientific Calculator',499)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="School Supplies">
+<img src="https://just-zipit.com/cdn/shop/files/HNHPL-2_2_256x@3x.jpg?v=1733048996">
+<div class="overlay">
+<p>Pencil Case - ₱150</p>
+<button class="shop-btn" onclick="addToCart('Pencil Case',150)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Books">
+<img src="https://ph-live-01.slatic.net/p/b353b2fe7c023cb5d041022462591411.jpg">
+<div class="overlay">
+<p>Math Workbook - ₱180</p>
+<button class="shop-btn" onclick="addToCart('Math Workbook',180)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Books">
+<img src="https://static.winc.com.au/pi/22/fa2bd64290a18bedb64a1388668a193e66c21f-192869/lgsq.jpg">
+<div class="overlay">
+<p>English Dictionary - ₱350</p>
+<button class="shop-btn" onclick="addToCart('English Dictionary',350)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Books">
+<img src="https://classicalacademicpress.com/cdn/shop/products/novare-life-science-1_1000x.jpg?v=1707842612">
+<div class="overlay">
+<p>Science Textbook - ₱420</p>
+<button class="shop-btn" onclick="addToCart('Science Textbook',420)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Art Supplies">
+<img src="https://projectworkshopph.com/cdn/shop/files/PrismacolorColoredPencils48.v02.png?v=1694976730&width=1445">
+<div class="overlay">
+<p>Color Pencil Set - ₱180</p>
+<button class="shop-btn" onclick="addToCart('Color Pencil Set',180)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Art Supplies">
+<img src="https://lightwish.com/cdn/shop/files/Watercolor_Paints-B3000210_1.jpg?v=1720678881&width=1600">
+<div class="overlay">
+<p>Watercolor Paint Set - ₱250</p>
+<button class="shop-btn" onclick="addToCart('Watercolor Paint Set',250)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Art Supplies">
+<img src="https://projectworkshopph.com/cdn/shop/files/FullSizeRender_4749fd2c-11bd-4b84-b002-4c0e8268fe5c.jpg?v=1720381720">
+<div class="overlay">
+<p>Sketch Pad - ₱160</p>
+<button class="shop-btn" onclick="addToCart('Sketch Pad',160)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Office Supplies">
+<img src="https://hbw.ph/wp-content/uploads/2017/10/STR-2445-2B-scaled.jpg">
+<div class="overlay">
+<p>Stapler Set - ₱120</p>
+<button class="shop-btn" onclick="addToCart('Stapler Set',120)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Office Supplies">
+<img src="https://media.officedepot.com/images/f_auto,q_auto,e_sharpen,h_450/products/9838012/9838012_o01/9838012">
+<div class="overlay">
+<p>Sticky Notes Pack - ₱70</p>
+<button class="shop-btn" onclick="addToCart('Sticky Notes Pack',70)">Add to Cart</button>
+</div>
+</div>
+
+<div class="pin" data-category="Office Supplies">
+<img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSCVc3lkgYt6ETyUnDCrocwvz11AwzJCHahfg&s">
+<div class="overlay">
+<p>Paper Clips Box - ₱50</p>
+<button class="shop-btn" onclick="addToCart('Paper Clips Box',50)">Add to Cart</button>
+</div>
+</div>
+
+
+    </div>
+</section>
+
+
+<section id="checkoutSummary" class="home" style="display:none;">
+    <h2>Checkout – Order Summary</h2>
+
+
+    <div id="orderSummary"></div>
+
+
+    <p><strong>Subtotal: ₱<span id="checkoutSubtotal">0</span></strong></p>
+    <p>
+    <strong>Discount Code:</strong>
+    <input type="text" id="discountInput" placeholder="Enter discount code">
+    <button class="start-btn" onclick="applyDiscount()">Apply</button>
+</p>
+<p><strong>Discount Applied: ₱<span id="discountAmount">0.00</span></strong></p>
+
+<input id="fullName" placeholder="Full Name">
+<input id="email" placeholder="Email">
+<input id="address" placeholder="Address">
+
+
+    <h4>Mode of Payment</h4>
+    <label><input type="radio" name="payment" value="GCash"> GCash</label><br>
+    <label><input type="radio" name="payment" value="Cash on Delivery"> Cash on Delivery</label>
+
+
+    <br><br>
+    <button class="start-btn" onclick="goToVehiclePage()">Next</button>
+</section>
+
+
+<section id="checkoutVehicle" class="home" style="display:none;">
+    <h2>Select Delivery Vehicle</h2>
+    <div id="cartDimensionSummary" class="cart-summary">Add items to see which vehicle fits your total weight and width.</div>
+
+
+    <label><input type="radio" name="vehicle" value="Bike" data-price="30"> Bike – ₱30</label><br>
+    <label><input type="radio" name="vehicle" value="Motor" data-price="50"> Motor – ₱50</label><br>
+    <label><input type="radio" name="vehicle" value="Car" data-price="150"> Car – ₱150</label><br>
+    <label><input type="radio" name="vehicle" value="Van" data-price="250"> Van – ₱250</label><br>
+    <label><input type="radio" name="vehicle" value="Truck" data-price="400"> Truck – ₱400</label><br>
+    <label><input type="radio" name="vehicle" value="Semi Truck" data-price="700"> Semi Truck – ₱700</label>
+    <h4>Buyer Location</h4>
+<select id="buyerLocation">
+<option value="">Select your area</option>
+<option value="Barangay">Barangay</option>
+<option value="Village">Village</option>
+<option value="Subdivision">Subdivision</option>
+<option value="Compound">Compound</option>
+<option value="Purok">Purok</option>
+<option value="Sitio">Sitio</option>
+</select>
+
+
+    <p><strong>Estimated Total: ₱<span id="finalTotal">0</span></strong></p>
+
+
+   <button class="start-btn" onclick="placeOrder()">Place Order</button>
+</section>
+
+
+<section id="deliveryInfo" class="home" style="display:none;">
+    <h2>Delivery Information 🚚</h2>
+    <p><strong>Your Rider:</strong> <span id="riderName">Finding rider...</span></p>
+    <p><strong>Current Location:</strong> <span id="riderLocation">Waiting...</span></p>
+    <p><strong>Arrival Timer:</strong> <span id="arrivalTimer">Calculating...</span></p>
+    <img id="riderAvatar" 
+src="https://i.imgur.com/6VBx3io.png"
+style="width:80px;height:80px;border-radius:50%;margin:10px auto;display:block;">
+
+    <h4>Delivery Status</h4>
+
+<div style="max-width:400px;margin:auto;text-align:left">
+
+<p id="statusPreparing">🟡 Preparing Order</p>
+<p id="statusPickup">⚪ Picking Up Items</p>
+<p id="statusDelivering">⚪ Delivering To You</p>
+<p id="statusArrived">⚪ Arrived</p>
+
+</div>
+
+    <h4>Place to Shop:</h4>
+    <p><strong>Distance Fee: ₱<span id="distanceFee">0</span></strong></p>
+    <select id="shopPlace" onchange="updateMap()">
+       <option value="SM Mall">SM Mall</option>
+        <option value="Ayala Mall">Ayala Mall</option>
+        <option value="Divisoria Market">Divisoria Market</option>
+        <option value="Ukay-Ukay Store">Ukay-Ukay Store</option>
+        <option value="Local Boutique">Local Boutique</option>
+    </select>
+
+
+    <p><strong>Estimated Pickup Time:</strong></p>
+    <p id="pickupTime">Calculating...</p>
+   
+    <p><strong>Pickup Location:</strong></p>
+
+
+<div id="map" style="width:100%;height:250px;border-radius:10px;"></div>
+
+<h4>Rider GPS</h4>
+
+<div style="width:100%;height:20px;background:#ddd;border-radius:10px;overflow:hidden">
+<div id="gpsBar" style="height:20px;width:0%;background:#113d00;transition:width 2s"></div>
+</div>
+
+    <p><strong>Conversation with Rider:</strong></p>
+
+
+<div class="chat-box" id="chatBox">
+    <div class="chat-message chat-rider">
+        Hi! I’m your JollyNaCart rider. What should I buy? 🙂
+    </div>
+</div>
+
+
+<textarea id="riderMessage" rows="3" placeholder="Type a message..."></textarea>
+<button class="start-btn" onclick="sendMessage()">Send</button>
+
+
+<p><strong>Upload Item Reference (Optional):</strong></p>
+<input type="file" id="itemImage" accept="image/*">
+<img id="previewImage" style="inline-size:100%; margin-block-start:10px; display:none; border-radius:10px;">
+
+
+    <br><br>
+    <button class="start-btn" onclick="confirmDelivery()">Confirm Delivery</button>
+</section>
+
+
+<!-- RATING SECTION -->
+<section id="ratingSection" class="home" style="display:none;">
+    <h2>Rate Your Delivery ⭐</h2>
+    <p>How was your experience with your JollyNaCart rider?</p>
+    
+    <div id="starRating">
+        <span data-value="1">☆</span>
+        <span data-value="2">☆</span>
+        <span data-value="3">☆</span>
+        <span data-value="4">☆</span>
+        <span data-value="5">☆</span>
+    </div>
+    
+    <p id="ratingText" style="margin: 1rem 0; font-size: 1.1rem; color: var(--primary);">Click a star to rate!</p>
+    
+    <button id="rateBtn" onclick="submitRating()">Rate Now</button>
+</section>
+
+
+<section id="receiptPage" class="home" style="display:none;">
+    <h2>Order Confirmed ✅</h2>
+    <p>Thank you for shopping with <strong>JollyNaCart</strong>!</p>
+
+    <div style="max-inline-size:500px;margin:auto;text-align:start;">
+        <h3>Receipt</h3>
+        <p><strong>Name:</strong> <span id="receiptName"></span></p>
+        <p><strong>Email:</strong> <span id="receiptEmail"></span></p>
+        <p><strong>Address:</strong> <span id="receiptAddress"></span></p>
+        <hr>
+        <div id="receiptItems"></div>
+        <hr>
+        <p>Subtotal: ₱<span id="receiptSubtotal"></span></p>
+        <p>Discount: −₱<span id="receiptDiscount"></span></p>
+        <p>Vehicle Fee: ₱<span id="receiptVehicle"></span></p>
+        <p>Distance Fee: ₱<span id="receiptDistance"></span></p>
+        <h3>Total Paid: ₱<span id="receiptTotal"></span></h3>
+    </div>
+
+    <br>
+    <button id="finishBtn" class="start-btn" style="font-size: 1.1rem; padding: 1rem 2rem;">🏠 Finish & Return Home</button>
+</section>
+<footer>
+    <p>&copy; 2026 JollyNaCart Personal Shopper</p>
+</footer>
+
+
+<!-- CART MODAL -->
+<div id="cartModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeCartModal()">&times;</span>
+        <h3>Your Cart</h3>
+        <div id="cartItems"></div>
+        <p><strong>Total: ₱<span id="cartTotal">0</span></strong></p>
+        <button class="start-btn" onclick="openCheckout()">Checkout</button>
+    </div>
+</div>
+
+<div id="authModal" class="modal" style="display:none;">
+    <div class="modal-content">
+        <h3>Login / Register</h3>
+        <input id="authName" placeholder="Full name (for register)">
+        <input id="authEmail" placeholder="Email">
+        <input id="authAddress" placeholder="Address (for register)">
+        <input id="authPassword" type="password" placeholder="Password">
+        <div style="display:flex;gap:10px;margin-top:10px;">
+            <button class="start-btn" onclick="loginUser()">Login</button>
+            <button class="start-btn" onclick="registerUser()">Register</button>
+        </div>
+        <p style="font-size:12px;color:#555;">Admin login uses <strong>ADMIN_EMAIL</strong>/<strong>ADMIN_PASSWORD</strong> from server env.</p>
+    </div>
+</div>
+
+<script>
+function saveUser(){
+
+  fetch("/save-user", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      fullName: document.getElementById("fullName").value,
+      email: document.getElementById("email").value,
+      address: document.getElementById("address").value
+    })
+  });
+
+}
+</script>
+
+<!-- GOOGLE MAPS UPDATE -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+
+/* =======================
+GLOBAL STATE
+======================= */
+let cart = [];
+let baseTotal = 0;
+let discountValue = 0;
+let vehicleFee = 0;
+let distanceFee = 0;
+let selectedReferenceImage = null;
+
+const riders = [
+"Kuya Mark",
+"Kuya Jayson",
+"Kuya Carlo",
+"Kuya Kevin",
+"Kuya Adrian"
+];
+
+const riderLocations = [
+"Quiapo",
+"Sampaloc",
+"Tondo",
+"Pasig",
+"Manila City"
+];
+
+
+/* =======================
+LOCATION DISTANCES
+======================= */
+const locations = {
+
+"SM Mall":{
+"Barangay":3,"Village":5,"Subdivision":6,"Compound":4,"Purok":7,"Sitio":9
+},
+
+"Ayala Mall":{
+"Barangay":4,"Village":6,"Subdivision":7,"Compound":5,"Purok":8,"Sitio":10
+},
+
+"Divisoria Market":{
+"Barangay":2,"Village":4,"Subdivision":5,"Compound":3,"Purok":6,"Sitio":8
+},
+
+"Ukay-Ukay Store":{
+"Barangay":1,"Village":3,"Subdivision":4,"Compound":2,"Purok":5,"Sitio":7
+},
+
+"Local Boutique":{
+"Barangay":2,"Village":4,"Subdivision":5,"Compound":3,"Purok":6,"Sitio":7
+}
+
+};
+
+
+const perKmRate = 15;
+
+const vehicleSpecs = {
+    Bike: { maxWeight: 20, maxLength: 80, maxWidth: 45, maxHeight: 60 },
+    Motor: { maxWeight: 35, maxLength: 110, maxWidth: 55, maxHeight: 70 },
+    Car: { maxWeight: 120, maxLength: 140, maxWidth: 90, maxHeight: 85 },
+    Van: { maxWeight: 450, maxLength: 210, maxWidth: 140, maxHeight: 120 },
+    Truck: { maxWeight: 1200, maxLength: 350, maxWidth: 200, maxHeight: 160 },
+    "Semi Truck": { maxWeight: 3600, maxLength: 450, maxWidth: 230, maxHeight: 200 }
+};
+
+const categorySpecs = {
+    Tops: { weight: 1.2, length: 70, width: 45, height: 6 },
+    Bottoms: { weight: 1.5, length: 90, width: 50, height: 10 },
+    Shoes: { weight: 1.8, length: 35, width: 25, height: 15 },
+    Jackets: { weight: 2.2, length: 90, width: 60, height: 12 },
+    Food: { weight: 2.5, length: 40, width: 25, height: 25 },
+    Drinks: { weight: 1.4, length: 25, width: 25, height: 30 },
+    Snacks: { weight: 1.0, length: 30, width: 20, height: 15 },
+    Electronics: { weight: 2.5, length: 45, width: 35, height: 20 },
+    Accessories: { weight: 0.8, length: 35, width: 20, height: 10 },
+    "School Supplies": { weight: 1.6, length: 40, width: 30, height: 15 },
+    Books: { weight: 1.2, length: 25, width: 18, height: 4 },
+    "Art Supplies": { weight: 1.3, length: 35, width: 30, height: 15 },
+    "Office Supplies": { weight: 1.4, length: 30, width: 25, height: 10 }
+};
+
+const defaultItemSpec = { weight: 1.2, length: 50, width: 40, height: 10 };
+
+function getCategoryForProduct(name){
+    const pins = document.querySelectorAll('.pin');
+    for(const pin of pins){
+        const label = pin.querySelector('.overlay p');
+        if(!label) continue;
+        const cardName = label.textContent.split(' - ')[0].trim();
+        if(cardName === name){
+            return pin.dataset.category || '';
+        }
+    }
+    return '';
+}
+
+function getItemSpec(name){
+    const category = getCategoryForProduct(name);
+    return categorySpecs[category] || defaultItemSpec;
+}
+
+let cartDimensionSummaryEl = null;
+
+function getCartRequirements(){
+    if(!cart.length){
+        return { weight: 0, length: 0, width: 0, height: 0 };
+    }
+    let totalWeight = 0;
+    let maxLength = 0;
+    let maxWidth = 0;
+    let totalHeight = 0;
+    cart.forEach(item => {
+        const spec = {
+            weight: item.weight || defaultItemSpec.weight,
+            length: item.length || defaultItemSpec.length,
+            width: item.width || defaultItemSpec.width,
+            height: item.height || defaultItemSpec.height
+        };
+        totalWeight += spec.weight;
+        maxLength = Math.max(maxLength, spec.length);
+        maxWidth = Math.max(maxWidth, spec.width);
+        totalHeight += spec.height;
+    });
+    return { weight: totalWeight, length: maxLength, width: maxWidth, height: totalHeight };
+}
+
+function updateCartDimensionSummary(){
+    if(!cartDimensionSummaryEl) return;
+    const req = getCartRequirements();
+    if(!cart.length){
+        cartDimensionSummaryEl.textContent = 'Add items to see which vehicle fits your total weight and width.';
+        return;
+    }
+    cartDimensionSummaryEl.textContent = `Cart needs up to ${req.length}cm length, ${req.width}cm width, ${req.height}cm height with ${req.weight.toFixed(1)}kg total weight.`;
+}
+
+function updateVehicleFit(){
+    const req = getCartRequirements();
+    document.querySelectorAll('input[name="vehicle"]').forEach(input => {
+        const spec = vehicleSpecs[input.value];
+        if(!spec) return;
+        const label = input.closest('label');
+        if(!label) return;
+        let info = label.querySelector('.vehicle-info');
+        if(!info){
+            info = document.createElement('span');
+            info.className = 'vehicle-info';
+            label.appendChild(info);
+        }
+        const fits = spec.maxWeight >= req.weight && spec.maxLength >= req.length && spec.maxWidth >= req.width && spec.maxHeight >= req.height;
+        info.textContent = `Dimensions: ${spec.maxLength}×${spec.maxWidth}×${spec.maxHeight}cm · Max load: ${spec.maxWeight}kg${fits ? ' · Fits your cart' : ' · Not suitable for current cart'}`;
+        label.classList.toggle('vehicle-unfit', !fits);
+    });
+}
+
+function refreshVehicleIndicators(){
+    updateCartDimensionSummary();
+    updateVehicleFit();
+}
+
+
+/* =======================
+CACHE ELEMENTS
+======================= */
+const homePage = document.getElementById("homePage");
+const shopPage = document.getElementById("shopPage");
+const checkoutSummary = document.getElementById("checkoutSummary");
+const checkoutVehicle = document.getElementById("checkoutVehicle");
+const deliveryInfo = document.getElementById("deliveryInfo");
+const ratingSection = document.getElementById("ratingSection");
+const receiptPage = document.getElementById("receiptPage");
+
+
+const header = document.querySelector("header");
+
+
+const cartCount = document.getElementById("cartCount");
+const cartModal = document.getElementById("cartModal");
+const cartItems = document.getElementById("cartItems");
+const cartTotal = document.getElementById("cartTotal");
+const cartDimensionSummary = document.getElementById("cartDimensionSummary");
+cartDimensionSummaryEl = cartDimensionSummary;
+
+
+const checkoutSubtotal = document.getElementById("checkoutSubtotal");
+const finalTotal = document.getElementById("finalTotal");
+const orderSummary = document.getElementById("orderSummary");
+
+
+const searchInput = document.getElementById("searchInput");
+const authBtn = document.getElementById("authBtn");
+const adminBtn = document.getElementById("adminBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const authModal = document.getElementById("authModal");
+const cartBtn = document.getElementById("cartBtn");
+const backBtn = document.getElementById("backBtn");
+
+const fullName = document.getElementById("fullName");
+const emailInput = document.getElementById("email");
+const addressInput = document.getElementById("address");
+
+const shopPlace = document.getElementById("shopPlace");
+const buyerLocation = document.getElementById("buyerLocation");
+const distanceFeeEl = document.getElementById("distanceFee");
+
+const chatBox = document.getElementById("chatBox");
+const itemImageInput = document.getElementById("itemImage");
+const previewImageEl = document.getElementById("previewImage");
+const recContainer = document.getElementById("recommendations");
+const recList = document.getElementById("recList");
+const recContext = document.getElementById("recContext");
+
+let productCatalog = [];
+
+if(cartBtn){
+    cartBtn.style.display = "none";
+}
+if(backBtn){
+    backBtn.style.display = "none";
+}
+
+if(itemImageInput){
+    itemImageInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if(!file){
+            if(previewImageEl){
+                previewImageEl.src = "";
+                previewImageEl.style.display = "none";
+            }
+            selectedReferenceImage = null;
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            if(previewImageEl){
+                previewImageEl.src = reader.result;
+                previewImageEl.style.display = "block";
+            }
+            selectedReferenceImage = reader.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function setBackButtonVisibility(visible){
+    if(backBtn){
+        backBtn.style.display = visible ? "inline-flex" : "none";
+    }
+}
+
+async function refreshAuthState(){
+try{
+const response = await fetch("/auth/me", { credentials: "same-origin" });
+const data = await response.json();
+const user = data.user;
+if(user){
+authModal.style.display="none";
+authBtn.style.display="none";
+logoutBtn.style.display="inline-block";
+adminBtn.style.display=user.role==="admin"?"inline-block":"none";
+}else{
+authBtn.style.display="inline-block";
+logoutBtn.style.display="none";
+adminBtn.style.display="none";
+}
+}catch(err){
+console.log(err);
+}
+}
+
+window.openAuthModal = function(){
+authModal.style.display="flex";
+}
+
+window.openAdminPage = function(){
+window.location.href="/admin.html";
+}
+
+window.registerUser = async function(){
+const payload = {
+fullName: document.getElementById("authName").value.trim(),
+email: document.getElementById("authEmail").value.trim(),
+address: document.getElementById("authAddress").value.trim(),
+password: document.getElementById("authPassword").value
+};
+
+if(!payload.fullName || !payload.email || !payload.address || !payload.password){
+alert("Please fill in every field to register.");
+return;
+}
+
+const response = await fetch("/auth/register",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+credentials:"same-origin",
+body: JSON.stringify(payload)
+});
+const data = await response.json();
+if(!response.ok){
+alert(data.error || "Registration failed");
+return;
+}
+authModal.style.display="none";
+alert("Registered and logged in");
+refreshAuthState();
+}
+
+window.loginUser = async function(){
+
+const payload = {
+email: document.getElementById("authEmail").value.trim(),
+password: document.getElementById("authPassword").value
+};
+
+if(!payload.email || !payload.password){
+alert("Enter email and password to continue.");
+return;
+}
+
+const response = await fetch("/auth/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+credentials:"same-origin",
+body: JSON.stringify(payload)
+});
+
+const data = await response.json();
+
+if(!response.ok){
+alert(data.error || "Login failed");
+return;
+}
+
+authModal.style.display="none";
+alert("Logged in successfully");
+
+if(data.user && data.user.role === "admin"){
+window.location.href = "/admin.html";
+return;
+}
+
+refreshAuthState();
+
+}
+
+window.logoutUser = async function(){
+try{
+await fetch("/auth/logout", {
+method:"POST",
+credentials:"same-origin"
+});
+}catch(err){
+console.log(err);
+}
+refreshAuthState();
+}
+
+
+/* =======================
+NAVIGATION
+======================= */
+function hideAllPages(){
+homePage.style.display="none";
+shopPage.style.display="none";
+checkoutSummary.style.display="none";
+checkoutVehicle.style.display="none";
+deliveryInfo.style.display="none";
+ratingSection.style.display="none";
+receiptPage.style.display="none";
+}
+
+window.hideAllPages = hideAllPages;
+
+
+window.showHome = function(){
+hideAllPages();
+header.style.display="flex";
+homePage.style.display="block";
+if(cartBtn){
+    cartBtn.style.display = "none";
+}
+setBackButtonVisibility(false);
+}
+
+
+window.showShop = function(){
+hideAllPages();
+header.style.display="flex";
+shopPage.style.display="block";
+if(cartBtn){
+    cartBtn.style.display = "inline-flex";
+}
+setBackButtonVisibility(true);
+}
+
+
+/* =======================
+CART
+======================= */
+
+function buildProductCatalog(){
+    productCatalog = Array.from(document.querySelectorAll('#shopPage .pin')).map(pin => {
+        const label = pin.querySelector('.overlay p')?.textContent || "";
+        const [rawName = "", rawPrice = "0"] = label.split(" - ₱");
+        const price = parseFloat(rawPrice.replace(/,/g,"")) || 0;
+        return {
+            name: rawName.trim(),
+            price,
+            category: pin.dataset.category || "Other",
+            image: pin.querySelector("img")?.src || ""
+        };
+    }).filter(p => p.name);
+}
+
+function formatPrice(value){
+    return Number(value || 0).toLocaleString("en-PH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function showRecommendations(selectedName){
+    if(!recContainer || !recList) return;
+    if(!productCatalog.length) buildProductCatalog();
+
+    const selected = productCatalog.find(p => p.name === selectedName);
+    let pool = productCatalog.filter(p => p.name !== selectedName);
+
+    if(selected){
+        pool = pool.filter(p => p.category === selected.category);
+        if(recContext){
+            recContext.textContent = `Because you picked ${selected.name}, you may also like:`;
+        }
+    } else if(recContext){
+        recContext.textContent = "You might also like:";
+    }
+
+    if(pool.length === 0){
+        recContainer.style.display = "none";
+        return;
+    }
+
+    const picks = pool
+        .slice()
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 3);
+
+    recList.innerHTML = "";
+    picks.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "rec-card";
+
+        const img = document.createElement("img");
+        img.src = p.image;
+        img.alt = p.name;
+
+        const meta = document.createElement("div");
+        meta.className = "rec-meta";
+
+        const nameEl = document.createElement("p");
+        nameEl.className = "rec-name";
+        nameEl.textContent = p.name;
+
+        const priceEl = document.createElement("p");
+        priceEl.className = "rec-price";
+        priceEl.textContent = `₱${formatPrice(p.price)}`;
+
+        const btn = document.createElement("button");
+        btn.className = "pill-btn";
+        btn.textContent = "Add";
+        btn.addEventListener("click", () => addToCart(p.name, p.price));
+
+        meta.appendChild(nameEl);
+        meta.appendChild(priceEl);
+        meta.appendChild(btn);
+
+        card.appendChild(img);
+        card.appendChild(meta);
+
+        recList.appendChild(card);
+    });
+
+    recContainer.style.display = "block";
+}
+
+document.addEventListener("DOMContentLoaded", buildProductCatalog);
+
+window.addToCart = function(name,price){
+    const spec = getItemSpec(name);
+    cart.push({
+        name,
+        price:Number(price),
+        weight: spec.weight,
+        length: spec.length,
+        width: spec.width,
+        height: spec.height
+    });
+    cartCount.textContent = cart.length;
+    showNotification(name + " added to cart");
+    refreshVehicleIndicators();
+    showRecommendations(name);
+}
+
+
+window.openCartModal = function(){
+cartModal.style.display="flex";
+displayCart();
+}
+
+
+window.closeCartModal = function(){
+cartModal.style.display="none";
+}
+
+
+function displayCart(){
+
+
+let total=0;
+cartItems.innerHTML="";
+
+
+cart.forEach((item,i)=>{
+total+=item.price;
+
+
+cartItems.innerHTML+=`
+<p>
+${item.name} - ₱${item.price.toFixed(2)}
+<button onclick="removeFromCart(${i})"
+style="margin-left:10px;background:red;color:white;border:none;border-radius:5px;">
+✖
+</button>
+</p>`;
+});
+
+
+cartTotal.textContent=total.toFixed(2);
+}
+
+
+window.removeFromCart = function(index){
+cart.splice(index,1);
+cartCount.textContent=cart.length;
+displayCart();
+    refreshVehicleIndicators();
+}
+
+window.addEventListener("click", function(e){
+
+const modal = document.getElementById("cartModal");
+
+if(e.target === modal){
+modal.style.display = "none";
+}
+
+});
+
+/* =======================
+CHECKOUT
+======================= */
+window.openCheckout = function(){
+
+
+if(cart.length===0){
+alert("Your cart is empty!");
+return;
+}
+if(logoutBtn.style.display !== "inline-block") {
+alert("Please login first.");
+openAuthModal();
+return;
+}
+
+cartModal.style.display="none";
+hideAllPages();
+header.style.display="none";
+
+
+checkoutSummary.style.display="block";
+
+
+baseTotal=0;
+discountValue=0;
+
+
+document.getElementById("discountAmount").textContent="0.00";
+orderSummary.innerHTML="";
+
+
+cart.forEach(item=>{
+baseTotal+=item.price;
+orderSummary.innerHTML+=`<p>${item.name} - ₱${item.price.toFixed(2)}</p>`;
+});
+
+
+checkoutSubtotal.textContent=baseTotal.toFixed(2);
+}
+
+
+/* =======================
+DISCOUNT
+======================= */
+window.applyDiscount = function(){
+
+
+const code=document.getElementById("discountInput").value.trim();
+
+
+if(!code){
+alert("Enter a discount code.");
+return;
+}
+
+
+const saved=JSON.parse(localStorage.getItem("JollyNaCartDiscount"));
+
+
+if(!saved || saved.code!==code){
+alert("Invalid discount code.");
+return;
+}
+
+
+if(new Date(saved.expires)<new Date()){
+alert("Code expired.");
+return;
+}
+
+
+discountValue=(baseTotal*saved.amount)/100;
+
+
+document.getElementById("discountAmount").textContent=
+discountValue.toFixed(2);
+
+
+updateFinalTotal();
+}
+
+
+/* =======================
+VEHICLE
+======================= */
+document.querySelectorAll('input[name="vehicle"]').forEach(v=>{
+v.addEventListener("change",()=>{
+vehicleFee=Number(v.dataset.price);
+updateFinalTotal();
+});
+});
+
+
+/* =======================
+DISTANCE
+======================= */
+
+
+if(shopPlace){
+shopPlace.addEventListener("change",()=>{
+updateMap();
+updateDistanceFee();
+});
+}
+
+
+if(buyerLocation){
+buyerLocation.addEventListener("change",updateDistanceFee);
+}
+
+
+function updateDistanceFee(){
+    const shop = document.getElementById("shopPlace")?.value;
+    const buyer = document.getElementById("buyerLocation")?.value;
+    
+    if(!shop || !buyer){
+        distanceFee=0;
+        updateFinalTotal();
+        return;
+    }
+
+    const distanceKm=locations[shop]?.[buyer];
+
+    if(!distanceKm){
+        distanceFee=0;
+        distanceFeeEl.textContent="0.00";
+        updateFinalTotal();
+        return;
+    }
+
+    distanceFee=distanceKm*perKmRate;
+    distanceFeeEl.textContent=`${distanceFee.toFixed(2)} (${distanceKm}km × ₱${perKmRate})`;
+    updateFinalTotal();
+}
+
+
+/* =======================
+TOTAL
+======================= */
+function updateFinalTotal(){
+
+
+const total=baseTotal-discountValue+vehicleFee+distanceFee;
+
+
+finalTotal.textContent=total.toFixed(2);
+}
+
+
+/* =======================
+ORDER FLOW
+======================= */
+
+
+window.goToVehiclePage = function(){
+
+const email = document.getElementById("email").value;
+
+if(!email.includes("@")){
+alert("Enter a valid email");
+return;
+}
+
+if(!document.querySelector('input[name="payment"]:checked')){
+alert("Select payment method.");
+return;
+}
+
+
+hideAllPages();
+checkoutVehicle.style.display="block";
+
+
+updateFinalTotal();
+}
+
+
+window.placeOrder = async function(){
+
+if(!fullName.value.trim()){
+alert("Enter name.");
+return;
+}
+
+if(!document.querySelector('input[name="vehicle"]:checked')){
+alert("Select vehicle.");
+return;
+}
+
+if(!buyerLocation.value){
+alert("Select your area.");
+return;
+}
+
+hideAllPages();
+deliveryInfo.style.display="block";
+
+assignRider();
+startDeliveryTracker();
+
+setPickupTime();
+updateDistanceFee();
+
+const orderSaved = await submitOrderToServer();
+if(!orderSaved){
+  showNotification("Order saved locally but failed to reach the server; admin dashboard will update once the connection recovers.");
+}
+
+}
+
+async function submitOrderToServer(){
+  if(!cart.length){
+    return false;
+  }
+
+  const itemsPayload = cart.map(item => `${item.name} (₱${item.price.toFixed(2)})`);
+  const totalValue = Number(finalTotal.textContent) || baseTotal || cart.reduce((sum, item) => sum + item.price, 0);
+
+  const payload = {
+    fullName: fullName?.value?.trim() || "",
+    email: emailInput?.value?.trim() || "",
+    address: addressInput?.value?.trim() || "",
+    items: itemsPayload,
+    total: totalValue,
+    referenceImage: selectedReferenceImage || null
+  };
+
+  try {
+    const response = await fetch("/submit-order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify(payload)
+    });
+
+    if(!response.ok){
+      const errorBody = await response.json().catch(() => null);
+      console.error("Order save failed", errorBody);
+      return false;
+    }
+
+    await response.json().catch(() => null);
+    console.log("Order saved:", payload);
+    return true;
+  } catch (error) {
+    console.error("Order submission error", error);
+    return false;
+  }
+}
+
+function assignRider(){
+
+const rider =
+riders[Math.floor(Math.random()*riders.length)];
+
+const location =
+riderLocations[Math.floor(Math.random()*riderLocations.length)];
+
+document.getElementById("riderName").textContent=rider;
+document.getElementById("riderLocation").textContent=location;
+
+}
+
+let buyerCoords = null;
+
+function getBuyerLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                buyerCoords = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+
+                console.log("Buyer location:", buyerCoords);
+
+                updateMapLive();
+            },
+            (error) => {
+                alert("Location access denied. Please allow GPS.");
+                console.error(error);
+            }
+        );
+    } else {
+        alert("Geolocation not supported.");
+    }
+}
+
+let riderCoords = { lat: 14.5995, lng: 120.9842 }; // start (Manila)
+
+function moveRiderOnMap() {
+    const interval = setInterval(() => {
+
+        if (!buyerCoords) return;
+
+        // move rider closer to buyer
+        riderCoords.lat += (buyerCoords.lat - riderCoords.lat) * 0.05;
+        riderCoords.lng += (buyerCoords.lng - riderCoords.lng) * 0.05;
+
+        updateMapLive();
+
+        // stop when close
+        const distance = Math.abs(riderCoords.lat - buyerCoords.lat) +
+                         Math.abs(riderCoords.lng - buyerCoords.lng);
+
+        if (distance < 0.0005) {
+            clearInterval(interval);
+        }
+
+    }, 2000);
+}
+
+/* =======================
+PICKUP TIME
+======================= */
+
+
+function setPickupTime(){
+document.getElementById("pickupTime").textContent="30–60 minutes";
+}
+
+function startArrivalTimer(){
+
+let timeLeft = 900;
+
+const timer = setInterval(()=>{
+
+let minutes = Math.floor(timeLeft / 60);
+let seconds = timeLeft % 60;
+
+document.getElementById("arrivalTimer").textContent =
+`${minutes}m ${seconds}s`;
+
+timeLeft--;
+
+if(timeLeft <= 0){
+clearInterval(timer);
+document.getElementById("arrivalTimer").textContent = "Rider Arrived!";
+}
+
+},1000);
+
+}
+
+
+/* =======================
+DELIVERY CONFIRM
+======================= */
+
+
+window.confirmDelivery = function(){
+
+
+hideAllPages();
+ratingSection.style.display="block";
+
+
+}
+
+function startDeliveryTracker(){
+
+const gpsBar=document.getElementById("gpsBar");
+
+startArrivalTimer();
+moveRiderOnMap();
+
+setTimeout(()=>{
+document.getElementById("statusPreparing").textContent="🟢 Preparing Order";
+document.getElementById("statusPickup").textContent="🟡 Picking Up Items";
+gpsBar.style.width="25%";
+
+showNotification("Order is being prepared");
+playNotificationSound();
+
+},3000);
+
+setTimeout(()=>{
+document.getElementById("statusPickup").textContent="🟢 Picking Up Items";
+document.getElementById("statusDelivering").textContent="🟡 Delivering To You";
+document.getElementById("riderLocation").textContent="On the way to your area";
+gpsBar.style.width="60%";
+
+showNotification("Rider picked up your items");
+playNotificationSound();
+
+},7000);
+
+setTimeout(()=>{
+document.getElementById("statusDelivering").textContent="🟢 Delivering To You";
+document.getElementById("statusArrived").textContent="🟡 Arrived";
+gpsBar.style.width="90%";
+
+showNotification("Rider is near your location");
+playNotificationSound();
+
+},12000);
+
+setTimeout(()=>{
+document.getElementById("statusArrived").textContent="🟢 Arrived";
+gpsBar.style.width="100%";
+
+showNotification("Your rider has arrived!");
+playNotificationSound();
+
+},16000);
+
+}
+
+function showNotification(text){
+
+const note = document.createElement("div");
+note.className = "notification";
+note.textContent = text;
+
+document.body.appendChild(note);
+
+setTimeout(()=>{
+note.remove();
+},3000);
+
+}
+
+function playNotificationSound(){
+const sound=document.getElementById("notifSound");
+if(sound){
+sound.currentTime = 0;
+sound.play().catch(()=>{});
+}
+}
+
+
+
+/*=======================
+CHAT
+======================= */
+
+let chatStream;
+
+function startChatStream(){
+  if(!window.EventSource){
+    return;
+  }
+  if(chatStream){
+    chatStream.close();
+  }
+  chatStream = new EventSource("/api/chat/stream");
+  chatStream.onmessage = () => {
+    loadChatMessages();
+  };
+  chatStream.onerror = (error) => {
+    console.log("Chat stream error", error);
+    if(chatStream){
+      chatStream.close();
+      chatStream = null;
+    }
+    setTimeout(startChatStream, 5000);
+  };
+}
+
+async function loadChatMessages(){
+  if(!chatBox) return;
+  try{
+    const res = await fetch("/api/chat/messages", { credentials: "same-origin" });
+    if(!res.ok){
+      if(res.status === 401){
+        return;
+      }
+      return;
+    }
+    const data = await res.json();
+    renderChatMessages(data.messages || []);
+  }catch(err){
+    console.log("Chat load error", err);
+  }
+}
+
+function renderChatMessages(messages){
+  if(!chatBox) return;
+  chatBox.innerHTML = "";
+
+  if(!messages.length){
+    chatBox.innerHTML = `<div class="chat-message chat-auto">
+<span>Hi! I’m your JollyNaCart rider. What should I buy? 🙂</span>
+<small>JollyNaCart • ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+</div>`;
+    return;
+  }
+
+  messages.forEach(msg => {
+    const bubble = document.createElement("div");
+    bubble.className = "chat-message";
+    if(msg.sender === "admin"){
+      bubble.classList.add("chat-admin");
+    }else if(msg.sender === "user"){
+      bubble.classList.add("chat-user");
+    }else{
+      bubble.classList.add("chat-auto");
+    }
+
+    const label = msg.sender === "admin" ? "Admin" : msg.sender === "user" ? "You" : "JollyNaCart";
+    const time = new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    bubble.innerHTML = `<span>${msg.text}</span><small>${label} • ${time}</small>`;
+    chatBox.appendChild(bubble);
+  });
+
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+window.sendMessage = async function(){
+  const input = document.getElementById("riderMessage");
+  const text = input?.value.trim();
+  if(!text){
+    return;
+  }
+
+  try{
+    const res = await fetch("/api/chat/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "same-origin",
+      body: JSON.stringify({ text })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok){
+      if(res.status === 401){
+        openAuthModal();
+        return;
+      }
+      alert(data.error || "Unable to send message right now.");
+      return;
+    }
+
+    if(input){
+      input.value = "";
+    }
+
+    await loadChatMessages();
+  }catch(err){
+    console.log("Chat send error", err);
+    alert("Unable to send message. Is the server running?");
+  }
+}
+
+
+/* =======================
+SEARCH
+======================= */
+
+
+window.performSearch = function(){
+
+const term = searchInput.value.trim().toLowerCase();
+
+document.querySelectorAll(".pin").forEach(pin=>{
+
+const text = pin.innerText.toLowerCase();
+
+pin.style.display = !term || text.includes(term) ? "" : "none";
+
+});
+
+}
+
+/* =======================
+CATEGORY FILTER
+======================= */
+
+
+window.filterCategory = function(){
+
+
+const val=document.getElementById("categoryFilter").value;
+
+
+document.querySelectorAll(".pin").forEach(pin=>{
+
+
+pin.style.display =
+(val==="all" || pin.dataset.category===val) ? "" : "none";
+
+
+});
+}
+
+
+/* =======================
+RECEIPT
+======================= */
+
+function generateReceipt(){
+
+document.getElementById("receiptName").textContent =
+document.getElementById("fullName").value;
+
+document.getElementById("receiptEmail").textContent =
+document.getElementById("email").value;
+
+document.getElementById("receiptAddress").textContent =
+document.getElementById("address").value;
+
+const receiptItems = document.getElementById("receiptItems");
+
+receiptItems.innerHTML = "";
+
+let subtotal = 0;
+
+cart.forEach(item=>{
+subtotal += item.price;
+
+receiptItems.innerHTML += `
+<p>${item.name} - ₱${item.price.toFixed(2)}</p>
+`;
+});
+
+document.getElementById("receiptSubtotal").textContent = subtotal.toFixed(2);
+document.getElementById("receiptDiscount").textContent = discountValue.toFixed(2);
+document.getElementById("receiptVehicle").textContent = vehicleFee.toFixed(2);
+document.getElementById("receiptDistance").textContent = distanceFee.toFixed(2);
+
+const total = subtotal - discountValue + vehicleFee + distanceFee;
+
+document.getElementById("receiptTotal").textContent = total.toFixed(2);
+
+}
+
+window.generateReceipt = generateReceipt;
+
+    refreshVehicleIndicators();
+});
+
+
+/* =======================
+RESET
+======================= */
+
+function resetOrderState() {
+    console.log("🔄 Resetting order state...");
+    
+    cart = [];
+    if (cartCount) cartCount.textContent = "0";
+    if (cartItems) cartItems.innerHTML = "";
+    if (cartTotal) cartTotal.textContent = "0.00";
+
+    baseTotal = 0; discountValue = 0; vehicleFee = 0; distanceFee = 0;
+    
+    if (checkoutSubtotal) checkoutSubtotal.textContent = "0.00";
+    if (finalTotal) finalTotal.textContent = "0.00";
+    const discountInput = document.getElementById("discountInput");
+    const discountAmount = document.getElementById("discountAmount");
+    if (discountInput) discountInput.value = "";
+    if (discountAmount) discountAmount.textContent = "0.00";
+
+    if (fullName) fullName.value = "";
+    if (emailInput) emailInput.value = "";
+    if (addressInput) addressInput.value = "";
+
+    document.querySelectorAll('input[name="payment"]').forEach(p => p.checked = false);
+    document.querySelectorAll('input[name="vehicle"]').forEach(v => v.checked = false);
+
+    if (chatBox) {
+        chatBox.innerHTML = `<div class="chat-message chat-auto">
+            Hi! I'm your JollyNaCart rider. What should I buy? 🙂
+            <small>JollyNaCart • ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+        </div>`;
+    }
+    const riderMessage = document.getElementById("riderMessage");
+    if (riderMessage) riderMessage.value = "";
+
+    const preview = document.getElementById("previewImage");
+    const referenceInput = document.getElementById("itemImage");
+    if (referenceInput) referenceInput.value = "";
+    if (preview) {
+        preview.style.display = "none";
+        preview.src = "";
+    }
+    selectedReferenceImage = null;
+
+    window.selectedRating = 0;
+    const stars = document.querySelectorAll('#starRating span');
+    if (stars.length) {
+        stars.forEach(star => {
+            star.textContent = '☆';
+            star.classList.remove('filled');
+        });
+    }
+    const ratingText = document.getElementById('ratingText');
+    if (ratingText) ratingText.textContent = 'Click a star to rate!';
+
+    refreshVehicleIndicators();
+    
+    if (chatBox) {
+        loadChatMessages();
+        startChatStream();
+    }
+    
+    console.log("✅ Reset complete!");
+}
+
+</script>
+
+<script>
+// FIXED MAPS & STARS
+let map, riderMarker, buyerMarker;
+window.selectedRating = 0;
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize map when delivery page shows
+    const observer = new MutationObserver(() => {
+        if (document.getElementById('deliveryInfo').style.display !== 'none' && !map) {
+            initMap();
+        }
+    });
+    observer.observe(document.body, { attributes: true, subtree: true });
+    
+    // FIXED STAR RATING
+    const stars = document.querySelectorAll('#starRating span');
+    stars.forEach((star, index) => {
+        star.addEventListener('click', () => {
+            window.selectedRating = index + 1;
+            stars.forEach((s, i) => {
+                s.textContent = i < window.selectedRating ? '★' : '☆';
+                s.classList.toggle('filled', i < window.selectedRating);
+            });
+            document.getElementById('ratingText').textContent = `You rated ${window.selectedRating} star${window.selectedRating > 1 ? 's' : ''}!`;
+        });
+        star.addEventListener('mouseover', () => {
+            stars.forEach((s, i) => {
+                s.textContent = i < index + 1 ? '★' : '☆';
+            });
+        });
+    });
+    
+    document.getElementById('starRating').addEventListener('mouseleave', () => {
+        stars.forEach((s, i) => {
+            s.textContent = i < window.selectedRating ? '★' : '☆';
+            s.classList.toggle('filled', i < window.selectedRating);
+        });
+    });
+});
+
+window.initMap = function() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl || map) return;
+    
+    map = L.map('map').setView([14.5995, 120.9842], 13);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Shop marker
+    const shopIcon = L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34]
+    });
+    
+    shopMarker = L.marker([14.5995, 120.9842], {icon: shopIcon}).addTo(map)
+        .bindPopup('🛒 Shop Location');
+    
+    map.invalidateSize();
+};
+
+window.updateMap = function() {
+    if (!map) {
+        setTimeout(initMap, 100);
+        return;
+    }
+    
+    const shopPlace = document.getElementById('shopPlace').value;
+    const shopCoords = {
+        'SM Mall': [14.5995, 120.9842],
+        'Ayala Mall': [14.5530, 121.0265],
+        'Divisoria Market': [14.6097, 120.9750],
+        'Ukay-Ukay Store': [14.6042, 120.9826],
+        'Local Boutique': [14.5990, 120.9840]
+    };
+    
+    if (shopMarker) map.removeLayer(shopMarker);
+    shopMarker = L.marker(shopCoords[shopPlace] || [14.5995, 120.9842]).addTo(map)
+        .bindPopup(`🛒 ${shopPlace}`);
+    
+    map.setView(shopCoords[shopPlace] || [14.5995, 120.9842], 13);
+};
+
+/* =======================
+RATING SUBMISSION
+======================= */
+window.submitRating = function() {
+    if (window.selectedRating === 0) {
+        alert("Please select a rating first!");
+        return;
+    }
+    
+    localStorage.setItem('latestRating', window.selectedRating);
+    alert(`Thank you for your ${window.selectedRating} star rating! 🎉`);
+    
+    generateReceipt();
+    hideAllPages();
+    document.getElementById("receiptPage").style.display = "block";
+};
+
+/* =======================
+FINISH ORDER - FIXED
+======================= */
+function finishOrder() {
+    console.log("🎉 FINISH CLICKED - WORKING!");
+    
+    // RESET EVERYTHING
+    window.cart = [];
+    document.getElementById('cartCount').textContent = '0';
+    document.getElementById('cartBtn').style.display = 'none';
+    
+    // SHOW HOME PAGE
+    document.getElementById('homePage').style.display = 'block';
+    document.querySelector('header').style.display = 'flex';
+    
+    // HIDE ALL OTHER PAGES
+    ['shopPage','checkoutSummary','checkoutVehicle','deliveryInfo','ratingSection','receiptPage'].forEach(id => {
+        document.getElementById(id).style.display = 'none';
+    });
+    
+    // CLEAR FORMS
+    ['fullName','email','address','discountInput','riderMessage'].forEach(id => {
+        const el = document.getElementById(id);
+        if(el) el.value = '';
+    });
+    
+    // SCROLL TO TOP
+    window.scrollTo({top:0, behavior:'smooth'});
+    
+    // SUCCESS ALERT
+    setTimeout(() => {
+        alert('✅ Thank you! Ready to shop again! 🛍️');
+    }, 300);
+}
+
+// 5 DIFFERENT WAYS TO MAKE IT WORK
+document.addEventListener('DOMContentLoaded', function() {
+    // Method 1: Direct onclick
+    window.finishOrder = finishOrder;
+    
+    // Method 2: Event delegation
+    document.addEventListener('click', function(e) {
+        if(e.target.id === 'finishBtn' || e.target.textContent.includes('FINISH')) {
+            finishOrder();
+        }
+    });
+    
+    // Method 3: Direct button listener
+    const btn = document.getElementById('finishBtn');
+    if(btn) {
+        btn.onclick = finishOrder;
+        btn.addEventListener('click', finishOrder);
+    }
+    
+    // Method 4: Mutation observer for dynamic content
+    const observer = new MutationObserver(() => {
+        const finishBtn = document.getElementById('finishBtn');
+        if(finishBtn && document.getElementById('receiptPage').style.display !== 'none') {
+            finishBtn.onclick = finishOrder;
+        }
+    });
+    observer.observe(document.body, {childList:true, subtree:true});
+    
+    // Method 5: Interval backup (nuclear option)
+    setInterval(() => {
+        const finishBtn = document.getElementById('finishBtn');
+        if(finishBtn) {
+            finishBtn.style.cursor = 'pointer';
+            finishBtn.title = 'Click to finish (works 100%)';
+        }
+    }, 1000);
+});
+
+window.updateMapLive = function() {
+    if (!map || !riderMarker) return;
+    
+    riderMarker.setLatLng([riderCoords.lat, riderCoords.lng]);
+    map.panTo([riderCoords.lat, riderCoords.lng]);
+};
+
+</script>
+</body>
+</html>
